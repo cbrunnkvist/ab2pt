@@ -1,5 +1,8 @@
 import csv
 
+DEFAULT_ESTIMATE_WHEN_SIZE_MISSING = "2"
+DEFAULT_COMPLETED_TASK_DURATION = {"days":7}
+
 class AbDataFile(object):
 	def __init__(self, file_name):
 		self.file_name = file_name
@@ -14,6 +17,7 @@ class Ab2PtAdapter(object):
 
 	def __getattr__(self, attr_name):
 		attr_data = getattr(self.ab_data_obj, attr_name)
+		attr_data.reverse()
 		new_data = list()
 		if(attr_name == "records"):
 			for rec in attr_data:
@@ -29,26 +33,26 @@ class Ab2PtAdapter(object):
 	
 	def fix_accepted(self, r):
 		from datetime import datetime, timedelta
-		accept_datetime = self.parse_time(r["Date Created"]) + timedelta(weeks=1)
 		# HACK: it is always UTC, luckily
+		accept_datetime = self.parse_time(r["Date Created"]) + timedelta(**DEFAULT_COMPLETED_TASK_DURATION)
 		accept_datetime = accept_datetime.replace(tzinfo=None)
-		if( (accept_datetime > datetime.today()) ):
-			if(r["Status"] == "Accepted"):
+		if(r["Status"] == "Accepted" or r["Status"] == "In Progress"):
+			if( (accept_datetime > datetime.today()) ):
 				accepted_str = self.format_date(datetime.today())
 			else:
-				accepted_str = ""
+				accepted_str = self.format_date(accept_datetime)
+				r["Status"] = "Accepted"
 		else:
-			accepted_str = self.format_date(accept_datetime)
-			r["Status"] = "Accepted"
+			accepted_str = ""
 		return accepted_str
 	
 	def fix_estimate(self, r):
 		size = r["Size"]
 		if( size == "" and r["Status"] == "Accepted"):
-			size = 3
+			size = DEFAULT_ESTIMATE_WHEN_SIZE_MISSING
 		elif( size != ""):
 			size = int(size)
-			valid = [1,2,3,5,8]
+			valid = [0,1,2,3,5,8]
 			for v in valid:
 				if size <= v:
 					size = v
@@ -60,7 +64,9 @@ class Ab2PtAdapter(object):
 	
 	def fix_status(self, r):
 		status = r["Status"]
-		if(r["Size"] == ""):
+		if(r["Iteration"] == ""):
+			status = "unscheduled"
+		elif(r["Size"] == ""):
 			status = "unscheduled"
 		elif(status == "Open"):
 			status = "unstarted"
