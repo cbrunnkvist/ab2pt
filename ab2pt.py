@@ -1,20 +1,21 @@
-import csv
-
 DEFAULT_ESTIMATE_WHEN_SIZE_MISSING = "2"
 DEFAULT_COMPLETED_TASK_DURATION = {"days":7}
 
+import csv, sys
 class AbDataFile(object):
 	def __init__(self, file_name):
 		self.file_name = file_name
 		self.raw_data = file(file_name).readlines()
 		self.records = list(csv.DictReader(self.raw_data))
 
-class Ab2PtAdapter(object):
+class Ab2PtAdapterBase(object):
 	def __init__(self, ab_data_obj):
 		from dateutil.parser import parse
 		self.parse_time = parse
 		self.ab_data_obj = ab_data_obj
-
+	
+	
+class Ab2PtAdapter(Ab2PtAdapterBase):
 	def __getattr__(self, attr_name):
 		attr_data = getattr(self.ab_data_obj, attr_name)
 		attr_data.reverse()
