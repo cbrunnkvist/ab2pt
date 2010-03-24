@@ -38,10 +38,9 @@ csv_headers["iteration"] = [
 	"Type"
 ]
 
-
 import csv, sys
 from pprint import pprint
-
+#### Hackiness starts here ... :-D ####
 def adapt(file_obj):
 	headers = file_obj.readline().rstrip().split(",") #chop \n then split
 	file_obj.seek(0)
@@ -62,7 +61,6 @@ class Ab2PtAdapterBase(object):
 		self.file_obj = file_obj
 		self.raw_data = file_obj.readlines()
 		self.orig_records = list(csv.DictReader(self.raw_data))
-		#self.orig_records.reverse()
 		self.records = list()
 		self.xlate_all()
 		self.records.reverse()
@@ -76,10 +74,7 @@ class Ab2PtAdapterBase(object):
 		for rec in self.orig_records:
 			if(rec["Type"] in ["user story", "task"]):
 				rec = self.xlate_record(rec)
-				print >>sys.stderr, "HEJ %s" % rec.get("Id", "INGET")
-				if any(rec): 
-					self.records.append(rec)
-					#pprint(self.records)
+				if any(rec): self.records.append(rec)
 	
 	def write_csv(self, file_obj):
 		field_names = [	
@@ -97,7 +92,6 @@ class Ab2PtAdapterBase(object):
 		]
 		writer = csv.DictWriter(file_obj, field_names)
 		writer.writerow( dict( zip(field_names,field_names) ) ) # Headers
-#		print >>sys.stderr, self.records
 		writer.writerows(self.records)
 	
 	def fix_accepted(self, r):
@@ -194,24 +188,13 @@ class AbIteration2PtAdapter(Ab2PtAdapterBase):
 		writer.writerow(field_names + extra_fields) # Headers
 		for rec in self.records:
 			unrolled_rec = list()
-			#print "HEJ rec ::::%s" % rec
 			for col in field_names:
-				print >>sys.stderr, "HEJ col :::::::::%s" % col
 				unrolled_rec.append(rec.get(col,""))
-				
-			#print "OKEJ NU col :::::::::%s" % col
 			if(rec.has_key("tasks")):
 				for task_dict in rec["tasks"]:
 					for k in ("Task", "Task Status"):
-						print >>sys.stderr, "APPENDING %s=%s" % (k, task_dict[k])
 						unrolled_rec.append(task_dict[k])
-			#		break
 			writer.writerow(unrolled_rec)
-
-	def unroll_tasks(self, rec):
-		print >>sys.stderr, "KOLLAR EFTER %s" % rec
-#		for (nr,col) in enumerate(rec):
-#			print "HEJ COL %s: %s" % (nr,col)
 		
 class AbProject2PtAdapter(Ab2PtAdapterBase):
 	def fix_status(self, r):

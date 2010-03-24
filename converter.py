@@ -1,7 +1,12 @@
 #!/usr/bin/env python
 from ab2pt import adapt
 
-######################################
+def debug_output(obj):
+	for r in ab2pt.records:
+		for (k,v) in r.items():
+			print >>stderr, (k+":").ljust(15), v
+		print >>stderr, "--"
+
 if __name__ == "__main__":
 	from sys import argv, stderr, stdout
 	if(len(argv) < 2):
@@ -9,16 +14,5 @@ if __name__ == "__main__":
 		exit(1)
 	ab2pt = adapt( open(argv[1],"rU") )
 	ab2pt.write_csv(stdout)
-	#for record in ab2pt.records:
-	#	print "%(Id)s: %(Accepted at)s (%(Current State)s)" % (record)
-	#	pass
-#	for n in range(-12,-7):
-#	for n in range(6,9):
-#		for (k,v) in ab2pt.records[n].items():
-	for r in ab2pt.records:
-		for (k,v) in r.items():
-			print >>stderr, (k+":").ljust(15), v
-		print >>stderr, "--"
-	#import time
-	#time.sleep(5)
-	#print '\n'.join(ab2pt.records[-1].values())
+	
+	#debug_output(ab2pt)
