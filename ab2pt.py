@@ -40,6 +40,7 @@ csv_headers["iteration"] = [
 
 
 import csv, sys
+from pprint import pprint
 
 def adapt(file_obj):
 	headers = file_obj.readline().rstrip().split(",") #chop \n then split
@@ -75,7 +76,10 @@ class Ab2PtAdapterBase(object):
 		for rec in self.orig_records:
 			if(rec["Type"] in ["user story", "task"]):
 				rec = self.xlate_record(rec)
-				if any(rec): self.records.append(rec)
+				print >>sys.stderr, "HEJ %s" % rec.get("Id", "INGET")
+				if any(rec): 
+					self.records.append(rec)
+					#pprint(self.records)
 	
 	def write_csv(self, file_obj):
 		field_names = [	
@@ -148,7 +152,6 @@ class AbIteration2PtAdapter(Ab2PtAdapterBase):
 		return status
 		
 	def xlate_record(self, r):
-		from pprint import pprint
 		new_rec = dict()
 		if(r["Type"] == "user story"):
 			new_rec["Id"] = r["Id"]
@@ -173,7 +176,7 @@ class AbIteration2PtAdapter(Ab2PtAdapterBase):
 		return new_rec
 
 	def write_csv(self, file_obj):
-		field_names = [	
+		field_names = (	
 			"Id",
 			"Story",
 			"Description",
@@ -185,27 +188,28 @@ class AbIteration2PtAdapter(Ab2PtAdapterBase):
 			"Current State",
 			"Story Type",
 			"Accepted at"
-		]
+		)
 		writer = csv.writer(file_obj)
-		field_names += self._max_nr_tasks * ("Task", "Task Status")
-		writer.writerow(field_names) # Headers
+		extra_fields = self._max_nr_tasks * ("Task", "Task Status")
+		writer.writerow(field_names + extra_fields) # Headers
 		for rec in self.records:
 			unrolled_rec = list()
 			#print "HEJ rec ::::%s" % rec
-			for col in rec:
-			#	print "HEJ col :::::::::%s" % col
-				if not col == "tasks":
-					unrolled_rec.append(rec[col])
-				else: 
-					for task_dict in rec[col]:
-						for k in ("Task", "Task Status"):
-							print >>sys.stderr, "APPENDING %s=%s" % (k, task_dict[k])
-						#	unrolled_rec.append(task_dict[k])
-						
+			for col in field_names:
+				print >>sys.stderr, "HEJ col :::::::::%s" % col
+				unrolled_rec.append(rec.get(col,""))
+				
+			#print "OKEJ NU col :::::::::%s" % col
+			if(rec.has_key("tasks")):
+				for task_dict in rec["tasks"]:
+					for k in ("Task", "Task Status"):
+						print >>sys.stderr, "APPENDING %s=%s" % (k, task_dict[k])
+						unrolled_rec.append(task_dict[k])
+			#		break
 			writer.writerow(unrolled_rec)
 
 	def unroll_tasks(self, rec):
-		print "KOLLAR EFTER %s" % rec
+		print >>sys.stderr, "KOLLAR EFTER %s" % rec
 #		for (nr,col) in enumerate(rec):
 #			print "HEJ COL %s: %s" % (nr,col)
 		
