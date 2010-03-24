@@ -13,8 +13,10 @@ if __name__ == "__main__":
 	#	print "%(Id)s: %(Accepted at)s (%(Current State)s)" % (record)
 	#	pass
 #	for n in range(-12,-7):
-	for n in range(6,9):
-		for (k,v) in ab2pt.records[n].items():
+#	for n in range(6,9):
+#		for (k,v) in ab2pt.records[n].items():
+	for r in ab2pt.records:
+		for (k,v) in r.items():
 			print >>stderr, (k+":").ljust(15), v
 		print >>stderr, "--"
 	#import time
