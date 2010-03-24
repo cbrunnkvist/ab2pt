@@ -61,10 +61,11 @@ class Ab2PtAdapterBase(object):
 		self.file_obj = file_obj
 		self.raw_data = file_obj.readlines()
 		self.orig_records = list(csv.DictReader(self.raw_data))
-		self.orig_records.reverse()
+		#self.orig_records.reverse()
 		self.records = list()
 		self.xlate_all()
-
+		self.records.reverse()
+	
 	def format_date(self, date_str):
 		d = self.parse_time(str(date_str))
 		d = d.strftime("%b %d, %Y")
@@ -74,7 +75,7 @@ class Ab2PtAdapterBase(object):
 		for rec in self.orig_records:
 			if(rec["Type"] in ["user story", "task"]):
 				rec = self.xlate_record(rec)
-				self.records.append(rec)
+				if any(rec): self.records.append(rec)
 	
 	def write_csv(self, file_obj):
 		field_names = [	
@@ -129,14 +130,21 @@ class Ab2PtAdapterBase(object):
 class AbIteration2PtAdapter(Ab2PtAdapterBase):
 	def fix_status(self, r):
 		status = r["Status"]
-		if(r["Size"] == ""):
-			status = "unscheduled"
-		elif(status == "Open"):
-			status = "unstarted"
-		elif(status == "In Progress"):
-			status = "started"
+		
+		if(r["Type"] == "task"):
+			if(status == "Complete"):
+				status = "completed"
+			else:
+				status = "not completed"
 		else:
-			status = status.lower()
+			if(r["Size"] == ""):
+				status = "unscheduled"
+			elif(status == "Open"):
+				status = "unstarted"
+			elif(status == "In Progress"):
+				status = "started"
+			else:
+				status = status.lower()
 		return status
 		
 	def xlate_record(self, r):
@@ -144,12 +152,63 @@ class AbIteration2PtAdapter(Ab2PtAdapterBase):
 		new_rec = dict()
 		if(r["Type"] == "user story"):
 			new_rec["Id"] = r["Id"]
-			new_rec["Story"] = r["Title"]			new_rec["Description"] = r["Description"]			new_rec["Owned By"] = r.get("Owner", "")			new_rec["Labels"] = r["Feature"]			new_rec["Requested By"] = r["Created By"]			new_rec["Created at"] = self.format_date(r["Created"])			#new_rec["Accepted at"] = self.fix_accepted(r)
+			new_rec["Story"] = r["Title"]			new_rec["Description"] = r["Description"]			new_rec["Owned By"] = r.get("Owner", "")			new_rec["Labels"] = r["Feature"]			new_rec["Requested By"] = r["Created By"]			new_rec["Created at"] = self.format_date(r["Created"])			new_rec["Accepted at"] = ""
 			new_rec["Estimate"] = self.fix_size(r)			new_rec["Current State"] = self.fix_status(r)			new_rec["Story Type"] = "feature"
 		elif(r["Type"] == "task"):
-			raise NotImplementedError("task")
+			parent_story = r["Id"].split("-")[0]
+			story_rec = filter(lambda x: x["Id"] == parent_story, self.records)[0]
+			t = dict()
+			t["Task"] = r["Title"]
+			t["Task Status"] = self.fix_status(r)
+			
+			if(not story_rec.has_key("tasks")):
+				story_rec["tasks"] = list()
+			story_rec["tasks"].append(t)
+			#HACK: repeating column names creates major headache
+			self._max_nr_tasks = len(story_rec["tasks"])
+			#new_rec["Id"] = r["Id"]
+			#new_rec["Story"] = r["Title"]
+						#new_rec["Story Type"] = r["Type"]
+			#raise NotImplementedError("task")
 		return new_rec
 
+	def write_csv(self, file_obj):
+		field_names = [	
+			"Id",
+			"Story",
+			"Description",
+			"Owned By",
+			"Estimate",
+			"Labels",
+			"Requested By",
+			"Created at",
+			"Current State",
+			"Story Type",
+			"Accepted at"
+		]
+		writer = csv.writer(file_obj)
+		field_names += self._max_nr_tasks * ("Task", "Task Status")
+		writer.writerow(field_names) # Headers
+		for rec in self.records:
+			unrolled_rec = list()
+			#print "HEJ rec ::::%s" % rec
+			for col in rec:
+			#	print "HEJ col :::::::::%s" % col
+				if not col == "tasks":
+					unrolled_rec.append(rec[col])
+				else: 
+					for task_dict in rec[col]:
+						for k in ("Task", "Task Status"):
+							print >>sys.stderr, "APPENDING %s=%s" % (k, task_dict[k])
+						#	unrolled_rec.append(task_dict[k])
+						
+			writer.writerow(unrolled_rec)
+
+	def unroll_tasks(self, rec):
+		print "KOLLAR EFTER %s" % rec
+#		for (nr,col) in enumerate(rec):
+#			print "HEJ COL %s: %s" % (nr,col)
+		
 class AbProject2PtAdapter(Ab2PtAdapterBase):
 	def fix_status(self, r):
 		status = r["Status"]
