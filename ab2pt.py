@@ -57,7 +57,6 @@ class Ab2PtAdapterBase(object):
 	def __init__(self, file_obj):
 		from dateutil.parser import parse
 		self.parse_time = parse
-#		self.ab_data_obj = ab_data_obj
 		
 		self.file_obj = file_obj
 		self.raw_data = file_obj.readlines()
@@ -82,20 +81,6 @@ class AbIteration2PtAdapter(Ab2PtAdapterBase):
 	pass
 
 class AbProject2PtAdapter(Ab2PtAdapterBase):
-#	def __getattr__(self, attr_name):
-#		attr_data = getattr(self.ab_data_obj, attr_name)
-#		attr_data.reverse()
-#		new_data = list()
-#		if(attr_name == "records"):
-#			for rec in attr_data:
-#				if(rec["Type"] == "user story"):
-#					rec = self.xlate_record(rec)
-#					new_data.append(rec)
-#		return new_data
-		
-#	def __getattr__(self, attr_name):
-#		print >>sys.stderr, "TFW"
-#		return super(Ab2PtAdapterBase,self).get(attr_name)
 	def fix_accepted(self, r):
 		from datetime import datetime, timedelta
 		# HACK: it is always UTC, luckily
