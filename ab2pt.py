@@ -1,37 +1,101 @@
 DEFAULT_ESTIMATE_WHEN_SIZE_MISSING = "2"
 DEFAULT_COMPLETED_TASK_DURATION = {"days":7}
 
+csv_headers = dict()
+csv_headers["project"] = [
+	"Id",
+	"Title",
+	"Description", 
+	"Size", 
+	"Priority", 
+	"Feature", 
+	"Release", 
+	"Iteration", 
+	"Source", 
+	"Business Value", 
+	"Business Objective", 
+	"Risk", 
+	"Status", 
+	"Created By", 
+	"Date Created", 
+	"Type" 
+]
+
+csv_headers["iteration"] = [
+	"Id", 
+	"Title", 
+	"Description", 
+	"Est. Hrs", 
+	"Hrs Left", 
+	"Hrs Spent", 
+	"Owner", 
+	"Size", 
+	"Priority", 
+	"Feature", 
+	"Status", 
+	"Created By", 
+	"Created", 
+	"Type"
+]
+
+
 import csv, sys
-class AbDataFile(object):
-	def __init__(self, file_name):
-		self.file_name = file_name
-		self.raw_data = file(file_name).readlines()
-		self.records = list(csv.DictReader(self.raw_data))
+
+def adapt(file_obj):
+	headers = file_obj.readline().rstrip().split(",") #chop \n then split
+	file_obj.seek(0)
+	if(headers == csv_headers["project"]):
+		return AbProject2PtAdapter(file_obj)
+	elif(headers == csv_headers["iteration"]):
+		return AbIteration2PtAdapter(file_obj)
+	else:
+		print csv_headers["iteration"]
+		print headers
+		raise RuntimeError("Unable to recognize CSV headers")
 
 class Ab2PtAdapterBase(object):
-	def __init__(self, ab_data_obj):
+	def __init__(self, file_obj):
 		from dateutil.parser import parse
 		self.parse_time = parse
-		self.ab_data_obj = ab_data_obj
-	
-	
-class Ab2PtAdapter(Ab2PtAdapterBase):
+#		self.ab_data_obj = ab_data_obj
+		
+		self.file_obj = file_obj
+		self.raw_data = file_obj.readlines()
+		self.orig_records = list(csv.DictReader(self.raw_data))
+		self.orig_records.reverse()
+
+	def format_date(self, date_str):
+		d = self.parse_time(str(date_str))
+		d = d.strftime("%b %d, %Y")
+		return d
+
 	def __getattr__(self, attr_name):
-		attr_data = getattr(self.ab_data_obj, attr_name)
-		attr_data.reverse()
 		new_data = list()
 		if(attr_name == "records"):
-			for rec in attr_data:
+			for rec in self.orig_records:
 				if(rec["Type"] == "user story"):
 					rec = self.xlate_record(rec)
 					new_data.append(rec)
 		return new_data
 	
-	def format_date(self, date_str):
-		d = self.parse_time(str(date_str))
-		d = d.strftime("%b %d, %Y")
-		return d
-	
+class AbIteration2PtAdapter(Ab2PtAdapterBase):
+	pass
+
+class AbProject2PtAdapter(Ab2PtAdapterBase):
+#	def __getattr__(self, attr_name):
+#		attr_data = getattr(self.ab_data_obj, attr_name)
+#		attr_data.reverse()
+#		new_data = list()
+#		if(attr_name == "records"):
+#			for rec in attr_data:
+#				if(rec["Type"] == "user story"):
+#					rec = self.xlate_record(rec)
+#					new_data.append(rec)
+#		return new_data
+		
+#	def __getattr__(self, attr_name):
+#		print >>sys.stderr, "TFW"
+#		return super(Ab2PtAdapterBase,self).get(attr_name)
 	def fix_accepted(self, r):
 		from datetime import datetime, timedelta
 		# HACK: it is always UTC, luckily
@@ -53,7 +117,7 @@ class Ab2PtAdapter(Ab2PtAdapterBase):
 			size = DEFAULT_ESTIMATE_WHEN_SIZE_MISSING
 		elif( size != ""):
 			size = int(size)
-			valid = [0,1,2,3,5,8]
+			valid = (0,1,2,3,5,8)
 			for v in valid:
 				if size <= v:
 					size = v
@@ -100,4 +164,5 @@ class Ab2PtAdapter(Ab2PtAdapterBase):
 		]
 		writer = csv.DictWriter(file_obj, field_names)
 		writer.writerow( dict( zip(field_names,field_names) ) ) # Headers
+#		print >>sys.stderr, self.records
 		writer.writerows(self.records)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from ab2pt import AbDataFile, Ab2PtAdapter
+from ab2pt import adapt
 
 ######################################
 if __name__ == "__main__":
@@ -7,7 +7,7 @@ if __name__ == "__main__":
 	if(len(argv) < 2):
 		print "Usage: %s [ab-user-stories.csv]" % argv[0]
 		exit(1)
-	ab2pt = Ab2PtAdapter( AbDataFile(argv[1]) )
+	ab2pt = adapt( open(argv[1],"rU") )
 	ab2pt.write_csv(stdout)
 	#for record in ab2pt.records:
 	#	print "%(Id)s: %(Accepted at)s (%(Current State)s)" % (record)
