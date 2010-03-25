@@ -1,0 +1,39 @@
+About ab2pt
+===========
+ab2pt is an data convertion tool to help when migration between online ticket tracking systems, more precicely from Agilebuddy (AB) to 
+PivotalTracker (PT) via CSV export/import.
+
+The conversion step is not entirely straightforward, some of the reasons 
+for which are:
+ * PT stores story state and finish date. AB derives story state from the state of a story's tasks.
+ * PT stores tasks in repeaded columns - AB stores on task per row after the corresponding story.
+ * AB does not seem to have a sense of One complete data dump format. Column format and scope of data differ between dumps.
+ * AB has a different story point scale plus adds hours estimates. PT has linear, exponential or Fibonacci points, and no concept of hours.
+ * AB doesn't seem to have a concept of iteration length. In PT, each iteration have a finite (default of overridden) duration.
+
+Before you can import anything, make sure your current PT project's 
+settings are as follows:
+ * Point scale: [1,2,3,5,8]
+ * Start Iterations On: should match yours
+ * Iteration Length: should match yours
+
+You can use one the following URLs for your project (replace AB-ID with 
+your own, and the project and iteration id's correspondingly).
+
+Iteration URL (iteration id 53). This gives you stories and tasks for one 
+iteration:
+http://AB-ID.agilebuddy.com/user_stories.csv?backlog=iteration&id=53
+
+Project backlog URL (project id 1). This one gives you the complete 
+backlog including accepted stories - but without tasks:
+http://AB-ID.agilebuddy.com/user_stories.csv?backlog=product&id=1
+
+Sample Use Case
+===============
+In my particular project, I had to first export/convert/import the project 
+backlog, then the last/current iteration. The result was that the current 
+tasks were included, but duplicate stories got created for that iteration.
+But I figure it is much easier to delete stories, than to re-enter tasks 
+manually.
+
+If you want to match iteration numbers so that the current one stays the same, the easiest way to achieve this is to bring up the Done panel in PT, click the dates of the oldest iterations and retroactively override their durations until the current one is in sync.
