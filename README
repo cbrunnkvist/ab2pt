@@ -1,7 +1,8 @@
 About ab2pt
 ===========
-ab2pt is an data convertion tool to help when migration between online ticket tracking systems, more precicely from Agilebuddy (AB) to 
-PivotalTracker (PT) via CSV export/import.
+ab2pt is an data convertion tool to help when migration between online 
+ticket tracking systems, more precicely from Agilebuddy (AB) to 
+Pivotal Tracker (PT) via CSV export/import.
 
 The conversion step is not entirely straightforward, some of the reasons 
 for which are:
@@ -36,4 +37,7 @@ tasks were included, but duplicate stories got created for that iteration.
 But I figure it is much easier to delete stories, than to re-enter tasks 
 manually.
 
-If you want to match iteration numbers so that the current one stays the same, the easiest way to achieve this is to bring up the Done panel in PT, click the dates of the oldest iterations and retroactively override their durations until the current one is in sync.
+If you want to match iteration numbers so that the current one stays the 
+same, the easiest way to achieve this is to bring up the Done panel in PT,
+click the dates of the oldest iterations and retroactively override their 
+durations until the current one is in sync.
