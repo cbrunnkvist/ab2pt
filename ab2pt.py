@@ -62,6 +62,7 @@ class Ab2PtAdapterBase(object):
 		self.raw_data = file_obj.readlines()
 		self.orig_records = list(csv.DictReader(self.raw_data))
 		self.records = list()
+		self._max_nr_tasks = 0
 		self.xlate_all()
 		self.records.reverse()
 	
@@ -163,10 +164,6 @@ class AbIteration2PtAdapter(Ab2PtAdapterBase):
 			story_rec["tasks"].append(t)
 			#HACK: repeating column names creates major headache
 			self._max_nr_tasks = len(story_rec["tasks"])
-			#new_rec["Id"] = r["Id"]
-			#new_rec["Story"] = r["Title"]
-						#new_rec["Story Type"] = r["Type"]
-			#raise NotImplementedError("task")
 		return new_rec
 
 	def write_csv(self, file_obj):
