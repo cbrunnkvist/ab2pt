@@ -41,3 +41,9 @@ If you want to match iteration numbers so that the current one stays the
 same, the easiest way to achieve this is to bring up the Done panel in PT,
 click the dates of the oldest iterations and retroactively override their 
 durations until the current one is in sync.
+
+Caveats
+=======
+In hindsight I suspect that it would might have been easier to use 
+the REST APIs to read-populate across the systems. But intially, CSV 
+conversion looked easier.
