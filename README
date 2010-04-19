@@ -17,6 +17,7 @@ settings are as follows:
  * Point scale: [1,2,3,5,8]
  * Start Iterations On: should match yours
  * Iteration Length: should match yours
+ * Enable tasks, if you so wish
 
 You can use one the following URLs for your project (replace AB-ID with 
 your own, and the project and iteration id's correspondingly).
