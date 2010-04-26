@@ -6,6 +6,7 @@ csv_headers["project"] = [
 	"Id",
 	"Title",
 	"Description", 
+	"Owner", 
 	"Size", 
 	"Priority", 
 	"Feature", 
@@ -49,6 +50,7 @@ def adapt(file_obj):
 	elif(headers == csv_headers["iteration"]):
 		return AbIteration2PtAdapter(file_obj)
 	else:
+		print csv_headers["project"]
 		print csv_headers["iteration"]
 		print headers
 		raise RuntimeError("Unable to recognize CSV headers")
@@ -142,6 +144,8 @@ class AbIteration2PtAdapter(Ab2PtAdapterBase):
 				status = "unstarted"
 			elif(status == "In Progress"):
 				status = "started"
+			elif(status == "In Test"):
+				status = "finished"
 			else:
 				status = status.lower()
 		return status
@@ -204,6 +208,8 @@ class AbProject2PtAdapter(Ab2PtAdapterBase):
 			status = "unstarted"
 		elif(status == "In Progress"):
 			status = "started"
+		elif(status == "In Test"):
+			status = "accepted"
 		else:
 			status = status.lower()
 		return status
