@@ -30,6 +30,13 @@ Project backlog URL (project id 1). This one gives you the complete
 backlog including accepted stories - but without tasks:
 http://AB-ID.agilebuddy.com/user_stories.csv?backlog=product&id=1
 
+To get the stories sorted in somewhat correct order, you will have to import 
+your CSVs in the sequence of: 
+ 1. Current iteration
+ 2. Next iteration
+ 3. Next+1 (and so on)
+ 4. Product backlog
+
 Sample Use Case
 ===============
 In my particular project, I had to first export/convert/import the project 
@@ -48,3 +55,11 @@ Caveats
 In hindsight I suspect that it would might have been easier to use 
 the REST APIs to read-populate across the systems. But intially, CSV 
 conversion looked easier.
+
+Because we cannot tell the whether the story is a deliberate duplicate or not,
+and because AB includes tasks only in Iteration exports, we end up with some 
+duplicate stories in the "Current" sprint - you'll need to manually remove one 
+copy, keeping the one that has the tasks (if any).
+
+Thankfully it's a one-time operation :)
+
